@@ -1,0 +1,50 @@
+{
+  "token": "CHANGE_ME",
+  "host": "0.0.0.0",
+  "port": 8765,
+  "volume_step": 6,
+  "apps": {
+    "Chrome": "C:/Program Files/Google/Chrome/Application/chrome.exe",
+    "Edge": "msedge",
+    "文件资源管理器": "explorer",
+    "QQ音乐": "CHANGE_ME_PATH",
+    "抖音": "CHANGE_ME_PATH"
+  },
+  "inputs": {
+    "HDMI1": 17,
+    "HDMI2": 18,
+    "DP1": 15,
+    "DP2": 16,
+    "DVI1": 3,
+    "VGA": 1
+  },
+  "monitor_extra_inputs": {},
+  "monitor_labels": {
+    "internal": "内置屏",
+    "Q27G40ZE": "AOC",
+    "XV320QU LM": "Acer"
+  },
+  "monitor_devices": {
+    "internal": "\\\\.\\DISPLAY2",
+    "Q27G40ZE": "\\\\.\\DISPLAY1",
+    "XV320QU LM": "\\\\.\\DISPLAY6"
+  },
+  "scale_options": [
+    100,
+    125,
+    150,
+    175,
+    200
+  ],
+  "tv_softswitch_monitors": [
+    "XV320QU LM"
+  ],
+  "monitor_input_allow": {
+    "Q27G40ZE": [
+      "DP1"
+    ],
+    "XV320QU LM": [
+      "HDMI1"
+    ]
+  }
+}

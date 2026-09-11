@@ -1,0 +1,38 @@
+# === logs ===
+*.log
+agent.log
+install_task.log
+
+# === python cache ===
+__pycache__/
+*.pyc
+*.pyo
+
+# === local secrets / machine-specific config ===
+config.json
+known_monitors.json
+
+# === temp probe/diag scripts (debug leftovers, not project core) ===
+probe*.py
+restore*.py
+diag*.py
+_skillcheck.py
+setup_autostart.bat
+
+# === binary tools / drivers (not source) ===
+*.apk
+*.zip
+*.exe
+NVIDIA Corporation/
+
+# === local temp dirs ===
+files/
+lock/
+prepare/
+ready/
+settings/
+
+# === editor / OS ===
+.DS_Store
+.vscode/
+.workbuddy/

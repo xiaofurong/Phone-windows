@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>电脑遥控</title>
+<style>
+:root{--bg:#e8e8e8;--fg:#1a1a1a;--card:#f5f5f5;--card2:#e0e0e0;--border:#c0c0c0;--acc:#1a1a1a;--acc2:#666;--hint:#888;--ok:#2d7a2d;--warn:#8a5a00;--danger:#a02828}
+body.dark{--bg:#1a1a1a;--fg:#e8e8e8;--card:#2a2a2a;--card2:#3a3a3a;--border:#454545;--acc:#e8e8e8;--acc2:#999;--hint:#777;--ok:#5cb85c;--warn:#e0a030;--danger:#e05252}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:serif;font-size:18px;padding:6px}
+h2{font-size:19px;margin:8px 0 4px;font-weight:normal}
+.card{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:8px;margin-bottom:6px}
+.stat{font-size:16px;color:var(--acc2);display:flex;align-items:center;gap:6px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--danger);flex:none}
+.dot.on{background:var(--ok)}
+.row{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.btn{display:inline-block;min-width:60px;padding:14px 8px;background:var(--card2);color:var(--fg);
+     border:1px solid var(--border);border-radius:4px;font-size:20px;text-align:center;cursor:pointer;flex:1 1 auto}
+.btn:active{background:var(--acc);color:var(--bg)}
+.btn.pri{background:var(--acc);color:var(--bg);border-color:var(--acc);font-weight:bold}
+.btn.small{font-size:16px;padding:10px 6px;min-width:44px}
+.tag{color:var(--ok);font-size:15px}
+.hint{color:var(--hint);font-size:14px;margin-top:3px}
+.bar{height:16px;background:var(--card2);border:1px solid var(--border);border-radius:2px;position:relative;margin-top:2px}
+.barfill{position:absolute;left:0;top:0;bottom:0;background:var(--acc2);border-radius:1px}
+.tabbar{display:flex;gap:2px;margin-bottom:6px}
+.tab{flex:1;padding:10px 4px;text-align:center;background:var(--card2);color:var(--acc2);
+     border:1px solid var(--border);border-radius:4px 4px 0 0;font-size:16px;cursor:pointer}
+.tab.on{background:var(--acc);color:var(--bg);border-color:var(--acc)}
+.page{display:none}
+.page.on{display:block}
+.toggle{float:right;font-size:22px;cursor:pointer;padding:4px 10px;color:var(--acc2)}
+</style>
+</head>
+<body>
+
+<div class="card stat">
+  <span class="dot" id="dot"></span>
+  <span id="statline" style="flex:1">连接中...</span>
+  <span class="toggle" id="themetoggle" onclick="toggleTheme()">&#9790;</span>
+</div>
+
+<div class="tabbar">
+  <div class="tab on" onclick="showTab('home')">遥控</div>
+  <div class="tab" onclick="showTab('box')">盒子</div>
+  <div class="tab" onclick="showTab('pc')">电脑</div>
+</div>
+
+<!-- ===== 遥控主页 ===== -->
+<div class="page on" id="p-home">
+  <div class="card">
+    <div class="hint" style="margin-bottom:4px">音量</div>
+    <div class="bar"><div class="barfill" id="volbar" style="width:0%"></div></div>
+    <div class="row">
+      <button class="btn" onclick="go('/api/volume',{action:'down'})">－</button>
+      <button class="btn pri" onclick="go('/api/volume',{action:'mute'})">静音</button>
+      <button class="btn" onclick="go('/api/volume',{action:'up'})">＋</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="hint" style="margin-bottom:4px">电视盒子方向键</div>
+    <div class="row">
+      <button class="btn small" onclick="bkey('left')">◀</button>
+      <button class="btn pri" onclick="bkey('ok')">OK</button>
+      <button class="btn small" onclick="bkey('right')">▶</button>
+    </div>
+    <div class="row">
+      <button class="btn small" onclick="bkey('up')">▲</button>
+      <button class="btn small" onclick="bkey('down')">▼</button>
+      <button class="btn small" onclick="bkey('back')">返回</button>
+    </div>
+    <div class="row">
+      <button class="btn small" onclick="bkey('home')">主页</button>
+      <button class="btn small" onclick="bkey('menu')">菜单</button>
+      <button class="btn small" onclick="bkey('playpause')">播放</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="hint" style="margin-bottom:4px">显示器</div>
+    <div id="mons"><span class="hint">--</span></div>
+  </div>
+</div>
+
+<!-- ===== 盒子专页 ===== -->
+<div class="page" id="p-box">
+  <div class="card">
+    <div class="row">
+      <button class="btn" onclick="bkey('up')">▲</button>
+    </div>
+    <div class="row">
+      <button class="btn" onclick="bkey('left')">◀</button>
+      <button class="btn pri" onclick="bkey('ok')">OK</button>
+      <button class="btn" onclick="bkey('right')">▶</button>
+    </div>
+    <div class="row">
+      <button class="btn" onclick="bkey('down')">▼</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="row">
+      <button class="btn small" onclick="bkey('back')">返回</button>
+      <button class="btn small" onclick="bkey('home')">主页</button>
+      <button class="btn small" onclick="bkey('menu')">菜单</button>
+    </div>
+    <div class="row">
+      <button class="btn small" onclick="bkey('volup')">音量＋</button>
+      <button class="btn small" onclick="bkey('voldown')">音量－</button>
+      <button class="btn small" onclick="bkey('mute')">静音</button>
+    </div>
+    <div class="row">
+      <button class="btn small" onclick="bkey('playpause')">播放暂停</button>
+      <button class="btn small" onclick="bkey('next')">下一首</button>
+      <button class="btn small" onclick="bkey('prev')">上一首</button>
+    </div>
+    <div class="row">
+      <button class="btn small" onclick="bkey('search')">搜索</button>
+      <button class="btn small" onclick="bkey('backspace')">删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 电脑专页 ===== -->
+<div class="page" id="p-pc">
+  <div class="card">
+    <div class="hint" style="margin-bottom:4px">应用</div>
+    <div id="apps"><span class="hint">--</span></div>
+  </div>
+  <div class="card">
+    <div class="hint" style="margin-bottom:4px">音量</div>
+    <div class="bar"><div class="barfill" id="volbar2" style="width:0%"></div></div>
+    <div class="row">
+      <button class="btn" onclick="go('/api/volume',{action:'down'})">－</button>
+      <button class="btn pri" onclick="go('/api/volume',{action:'mute'})">静音</button>
+      <button class="btn" onclick="go('/api/volume',{action:'up'})">＋</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="hint" style="margin-bottom:4px">键盘快捷</div>
+    <div class="row">
+      <button class="btn small" onclick="pckey('enter')">回车</button>
+      <button class="btn small" onclick="pckey('backspace')">退格</button>
+      <button class="btn small" onclick="pckey('esc')">ESC</button>
+      <button class="btn small" onclick="pckey('space')">空格</button>
+    </div>
+    <div class="row">
+      <button class="btn small" onclick="pckey('f11')">全屏</button>
+      <button class="btn small" onclick="pckey('left',['alt'])">←后退</button>
+      <button class="btn small" onclick="pckey('right',['alt'])">→前进</button>
+    </div>
+    <div class="row">
+      <button class="btn small" onclick="pckey('f',['ctrl'])">搜索</button>
+      <button class="btn small" onclick="pckey('home',['ctrl'])">主页</button>
+      <button class="btn small" onclick="pckey('f4',['alt'])">关闭</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="hint" style="margin-bottom:4px">触控板（拖动移动 · 轻点点击 · 双指滚动）</div>
+    <div id="kpad" style="background:var(--card2);border:1px solid var(--border);border-radius:4px;height:200px;position:relative;touch-action:none">
+      <div style="position:absolute;top:8px;left:0;right:0;text-align:center;color:var(--hint);font-size:15px;pointer-events:none" id="kpadhint">拖动=移动鼠标 · 轻点=单击</div>
+    </div>
+    <div class="row">
+      <button class="btn small" onclick="pclick('left',1)">左键</button>
+      <button class="btn small" onclick="pclick('right',1)">右键</button>
+      <button class="btn small" onclick="pclick('left',2)">双击</button>
+      <button class="btn small" onclick="pclick('middle',1)">中键</button>
+    </div>
+    <div class="row">
+      <button class="btn small" onclick="pscroll(-120)">滚▲</button>
+      <button class="btn small" onclick="pscroll(120)">滚▼</button>
+      <button class="btn small" onclick="recenterMouse()">⌖ 居中</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ES5 兼容 Kindle WebKit; 无 fetch/箭头函数
+var PC_SCREEN = "XV320QU LM"; // 默认目标屏, status 回来自动更新
+var THEME = "light";
+
+function go(url, body){
+  var x = new XMLHttpRequest();
+  x.open("POST", url, true);
+  x.setRequestHeader("Content-Type","application/json");
+  x.onreadystatechange = function(){ if(x.readyState===4){ refresh(); } };
+  x.send(JSON.stringify(body||{}));
+}
+function bkey(k){
+  var x = new XMLHttpRequest();
+  x.open("POST","/api/box/key",true);
+  x.setRequestHeader("Content-Type","application/json");
+  x.send(JSON.stringify({key:k}));
+}
+function pckey(key, mods){
+  var x = new XMLHttpRequest();
+  x.open("POST","/api/vinput/key",true);
+  x.setRequestHeader("Content-Type","application/json");
+  x.send(JSON.stringify({key:key, mods:mods||null}));
+}
+function pmouse(act, btn, times){
+  var body = {monitor:PC_SCREEN};
+  if(act==="move"){ body.action="move"; body.dx=btn; body.dy=times; }
+  else if(act==="scroll"){ body.action="scroll"; body.button="wheel"; body.delta=times; }
+  else { body.action="click"; body.button=btn||"left"; body.times=times||1; }
+  var x = new XMLHttpRequest();
+  x.open("POST","/api/vinput/mouse",true);
+  x.setRequestHeader("Content-Type","application/json");
+  x.send(JSON.stringify(body));
+}
+function pclick(btn, times){ pmouse("click", btn, times); }
+function pscroll(delta){ pmouse("scroll", null, delta); }
+function recenterMouse(){ pmouse("move", null, null); }
+
+// ===== 触控板: 拖动移动 / 轻点点击 / 双指滚动 =====
+var PAD = { on:false, sx:0, sy:0, lx:0, ly:0, startT:0, startCX:0, startCY:0,
+            moved:false, twoTouch:false, scrollAcc:0, scrollRAF:null };
+var MOVE_SENS = 1.5;   // 触控板灵敏度: 手指1px -> 鼠标1.5px
+var WHEEL_K = 3;        // 双指1px -> 3滚轮单位
+
+function padInit(){
+  var pad = document.getElementById("kpad");
+  if(!pad || pad._bound) return;
+  pad._bound = true;
+  pad.addEventListener("touchstart", padStart, false);
+  pad.addEventListener("touchmove", padMove, false);
+  pad.addEventListener("touchend", padEnd, false);
+  pad.addEventListener("touchcancel", padEnd, false);
+}
+function padXY(e){
+  var t = e.touches && e.touches.length ? e.touches[0] : e;
+  var r = e.currentTarget.getBoundingClientRect();
+  return { x: t.clientX - r.left, y: t.clientY - r.top, w: r.width, h: r.height };
+}
+function padStart(e){
+  e.preventDefault();
+  var p = padXY(e);
+  PAD.on = true; PAD.sx=p.x; PAD.sy=p.y; PAD.lx=p.x; PAD.ly=p.y;
+  PAD.startT = Date.now(); PAD.startCX = e.touches[0].clientX; PAD.startCY = e.touches[0].clientY;
+  PAD.moved = false;
+  PAD.twoTouch = e.touches && e.touches.length >= 2;
+}
+function padMove(e){
+  if(!PAD.on) return;
+  e.preventDefault();
+  var p = padXY(e);
+  if(e.touches && e.touches.length >= 2){
+    // 双指 -> 滚动
+    PAD.twoTouch = true;
+    var dy = p.y - PAD.ly;
+    PAD.ly = p.y;
+    PAD.scrollAcc += dy;
+    flushPadScroll();
+    return;
+  }
+  // 单指 -> 移动
+  var dx = (p.x - PAD.lx) * MOVE_SENS;
+  var dy = (p.y - PAD.ly) * MOVE_SENS;
+  PAD.lx = p.x; PAD.ly = p.y;
+  if(Math.abs(p.x - PAD.sx) > 6 || Math.abs(p.y - PAD.sy) > 6) PAD.moved = true;
+  if(Math.abs(dx) >= 1 || Math.abs(dy) >= 1)
+    pmouse("move", Math.round(dx), Math.round(dy));
+}
+function padEnd(e){
+  if(!PAD.on) return;
+  e.preventDefault();
+  PAD.on = false;
+  if(PAD.twoTouch){ PAD.twoTouch = false; return; }
+  // 轻点 = 单击 (移动 < 6px 且 时间 < 400ms)
+  var t = e.changedTouches ? e.changedTouches[0] : e;
+  var dist = Math.abs((t.clientX||0) - PAD.startCX) + Math.abs((t.clientY||0) - PAD.startCY);
+  var dur = Date.now() - PAD.startT;
+  if(!PAD.moved && dist < 10 && dur < 400){
+    pmouse("click", "left", 1);
+  }
+}
+function flushPadScroll(){
+  if(PAD.scrollRAF) return;
+  PAD.scrollRAF = setTimeout(function(){
+    PAD.scrollRAF = null;
+    var px = PAD.scrollAcc;
+    if(Math.abs(px) < 0.5) return;
+    var delta = Math.round(px * WHEEL_K);
+    PAD.scrollAcc -= delta / WHEEL_K;
+    if(delta !== 0) pmouse("scroll", null, delta);
+  }, 50);
+}
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;"); }
+
+function showTab(t){
+  var pages = ["home","box","pc"];
+  for(var i=0;i<pages.length;i++){
+    var p = document.getElementById("p-"+pages[i]);
+    var tab = document.getElementsByClassName("tab")[i];
+    if(pages[i]===t){ p.className="page on"; tab.className="tab on"; }
+    else { p.className="page"; tab.className="tab"; }
+  }
+}
+
+function toggleTheme(){
+  THEME = THEME==="light"?"dark":"light";
+  document.body.className = THEME==="dark"?"dark":"";
+  document.getElementById("themetoggle").innerHTML = THEME==="dark"?"&#9728;":"&#9790;";
+  try{ localStorage.setItem("ktheme", THEME); }catch(e){}
+}
+
+function refresh(){
+  var x = new XMLHttpRequest();
+  x.open("GET","/api/status",true);
+  x.onreadystatechange=function(){
+    if(x.readyState!==4) return;
+    var j=null; try{ j=JSON.parse(x.responseText); }catch(e){}
+    var ok = j && j.ok===true;
+    var dot=document.getElementById("dot");
+    dot.className = ok?"dot on":"dot";
+    document.getElementById("statline").textContent = ok?("在线 "+j.volume+"%"):"离线";
+    if(!ok) return;
+    // 音量条
+    var v=j.volume||0;
+    document.getElementById("volbar").style.width=v+"%";
+    var vb2=document.getElementById("volbar2");
+    if(vb2) vb2.style.width=v+"%";
+    // 目标屏自动选第一个外显
+    var vs=j.vscreens||[];
+    for(var i=0;i<vs.length;i++){
+      if(vs[i].id!=="internal"){ PC_SCREEN=vs[i].id; break; }
+    }
+    // 应用
+    var apps=j.apps||[], ah="";
+    for(var i=0;i<apps.length;i++){
+      var n=String(apps[i]).replace(/'/g,"\\'");
+      ah+='<button class="btn small" style="flex:1 1 40%;margin:2px" onclick="go(\'/api/app\',{name:\''+n+'\'})">'+esc(apps[i])+'</button>';
+    }
+    document.getElementById("apps").innerHTML=ah||'<span class="hint">未配置应用</span>';
+    // 显示器
+    var m=j.monitors||[], mh="";
+    for(var i=0;i<m.length;i++){
+      var mm=m[i], id=mm.id, lb=mm.label||mm.id;
+      mh+='<div style="margin-bottom:6px"><span style="font-size:18px">'+esc(lb)+'</span>';
+      if(mm.is_primary) mh+='<span class="tag"> ★</span>';
+      if(mm.brightness!=null) mh+='<span class="hint"> 亮度'+mm.brightness+'</span>';
+      mh+='<div class="row" style="margin-top:2px">';
+      mh+='<button class="btn small" onclick="go(\'/api/monitor/primary\',{monitor:\''+id+'\'})">设主</button>';
+      if(mm.kind!=="internal"){
+        mh+='<button class="btn small" onclick="go(\'/api/monitor/blank\',{monitor:\''+id+'\'})">关屏</button>';
+        mh+='<button class="btn small" onclick="go(\'/api/monitor/unblank\',{monitor:\''+id+'\'})">亮屏</button>';
+      }
+      mh+='</div></div>';
+    }
+    document.getElementById("mons").innerHTML=mh||'<span class="hint">无</span>';
+  };
+  x.send();
+}
+
+// 恢复主题
+try{ var t=localStorage.getItem("ktheme"); if(t==="dark") toggleTheme(); }catch(e){}
+padInit();
+refresh();
+setInterval(refresh, 20000);
+</script>
+</body>
+</html>
